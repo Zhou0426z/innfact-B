@@ -23,7 +23,7 @@ namespace innfact.Service
             var result = new OutAccountVM();
             if(hasBeenSignUp!=null)
             {
-                result.StatusCode = StatusCodes.Status403Forbidden;
+                result.StatusCode = StatusCodes.Status500InternalServerError;
                 return result;
             }
             var value = new Accounts()
@@ -43,15 +43,22 @@ namespace innfact.Service
         }
         public OutAccountVM Login(InAccountVM account)
         {
-            var value = db.Accounts.Where(x => x.LoginBy == "normal")
+            var result = new OutAccountVM();
+            var value = db.Accounts.Where(x => x.LoginBy == account.LoginBy)
                                    .SingleOrDefault(x => x.Email == account.Email && x.Password == AccountHelper.EncodePassword(account.Password));
-            var result = new OutAccountVM()
+            if(value!=null)
             {
-                StatusCode = StatusCodes.Status200OK,
-                AccountID = value.AccountId,
-                Email = value.Email,
-                Name = value.UserName
-            };
+                result.StatusCode = StatusCodes.Status200OK;
+                result.AccountID = value.AccountId;
+                result.Email = value.Email;
+                result.Name = value.UserName;
+               
+            }
+            else
+            {
+                result.StatusCode = StatusCodes.Status500InternalServerError;
+            }
+
 
             return result;
             
